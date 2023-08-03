@@ -24,45 +24,51 @@ namespace Day_Rater
             dayListBox.Items.Add(textBox3.Text + " " + num + "/5 " + textBox1.Text);
         }
 
-
-        private void loadToolStripMenuItem_Click(object sender, EventArgs e)
+        private void loadingFile(string fileName, string safeFileName) //Shortcut method to load files into the entry window
         {
             string line;
             List<string> logFile = new List<string>();
+            System.IO.StreamReader file = new System.IO.StreamReader(fileName);
+            // File.ReadAllText(openFileDialog1.FileName);
+            dayListBox.Items.Clear();
+            while ((line = file.ReadLine()) != null)
+            {
+
+                dayListBox.Items.Add(line);
+                logFile.Add(line);
+
+            }
+            dayListBox.SelectedIndex = dayListBox.Items.Count - 1;
+            dayListBox.SelectedIndex = -1;
+            getAvgRating(logFile);
+            fileNameTextBox.Text = safeFileName;
+            file.Close();
+        }
+
+        private void loadToolStripMenuItem_Click(object sender, EventArgs e)
+        {
             var result = openFileDialog1.ShowDialog();
             if (result == DialogResult.OK)
             {
-                System.IO.StreamReader file = new System.IO.StreamReader(openFileDialog1.FileName);
-                // File.ReadAllText(openFileDialog1.FileName);
-                dayListBox.Items.Clear();
-                while ((line = file.ReadLine()) != null)
-                {
-
-                    dayListBox.Items.Add(line);
-                    logFile.Add(line);
-
-                }
-                dayListBox.SelectedIndex = dayListBox.Items.Count - 1;
-                dayListBox.SelectedIndex = -1;
-                getAvgRating(logFile);
-                fileNameTextBox.Text = openFileDialog1.SafeFileName;
-                file.Close();
+                loadingFile(openFileDialog1.FileName, openFileDialog1.SafeFileName);
             }
         }
         private void getAvgRating(List<string> logFile) //Parse daysFile, get average of ratings
         {
             double[] avgArr = new double[logFile.Count];
+            double avgRating;
             string aString;
             for (int i = 0; i < logFile.Count; i++)
             {
                 aString = (logFile[i].Split(':').Last()).Split('/').First().TrimStart(' ').TrimEnd(' ');
-               
+
                 try
                 {
-
                     if (!Char.IsDigit(aString, 0) || !string.IsNullOrWhiteSpace(aString))
                         avgArr[i] = double.Parse(aString);
-                    avgTextBox.Text = avgArr.Average().ToString();
+
+                    avgRating = Math.Round(avgArr.Average(), 2);
+                    avgTextBox.Text = avgRating.ToString();
                 }
 
                 catch (FormatException)
@@ -71,7 +77,7 @@ namespace Day_Rater
                     avgTextBox.Text = "N/A";
                     break;
                 }
-                
+
             }
 
         }
@@ -81,6 +87,7 @@ namespace Day_Rater
             DateTime date, Days;
             String[] dayArr = { "Sun:", "Mon:", "Tue:", "Wes:", "Thu:", "Fri:", "Sat:" };
             date = DateTime.Now;
+            string defaultFile = Properties.Settings.Default.DefaultFile;
 
             Days = date;
             int i = (int)Days.DayOfWeek;
@@ -89,25 +96,44 @@ namespace Day_Rater
             {
                 textBox3.Text += Days.AddDays(0).Month + "/" + Days.AddDays(0).Day + " " + dayArr[i];
             }
+
+            if (defaultFile!= "")
+            {
+                loadingFile(defaultFile, Properties.Settings.Default.SafeDefaultFile);
+            }
         }
 
         private void saveToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            using (StreamWriter writer = new StreamWriter(openFileDialog1.FileName))
-            {
-                foreach (var item in dayListBox.Items)
+            if (fileNameTextBox.Text == openFileDialog1.SafeFileName)
+                using (StreamWriter writer = new StreamWriter(openFileDialog1.FileName))
                 {
-                    writer.WriteLine(item.ToString());
-                }
+                    foreach (var item in dayListBox.Items)
+                    {
+                        writer.WriteLine(item.ToString());
+                    }
 
+                }
+            else
+            {
+
+                using (StreamWriter writer = new StreamWriter(Properties.Settings.Default.DefaultFile))
+                {
+                    foreach (var item in dayListBox.Items)
+                    {
+                        writer.WriteLine(item.ToString());
+                    }
+
+                }
             }
         }
 
         private void button2_Click(object sender, EventArgs e) //Remove Day button
         {
             if (dayListBox.SelectedIndex != -1)
-            { 
-            dayListBox.Items.RemoveAt(dayListBox.SelectedIndex);
+            {
+                dayListBox.Items.RemoveAt(dayListBox.SelectedIndex);
+                button4.Visible = false;
             }
 
         }
@@ -115,7 +141,7 @@ namespace Day_Rater
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             DialogResult dialogResult = MessageBox.Show("Are you sure?", "Close Program", MessageBoxButtons.YesNo);
-            
+
             if (dialogResult == DialogResult.Yes)
             {
                 this.Close();
@@ -135,12 +161,11 @@ namespace Day_Rater
             {
                 string input = dayListBox.SelectedItem.ToString();
                 string input2 = input.Substring(input.IndexOf(':') + 1);
-                textBox1.Text = input2.Substring(input2.IndexOf("/") + 3);
+                textBox1.Text = input2.Substring(input2.IndexOf("/") + 2);
                 button4.Visible = true;
                 button4.Enabled = true;
                 button2.Enabled = true;
             }
-
         }
 
         private void button3_Click(object sender, EventArgs e) //Unselect button
@@ -158,12 +183,32 @@ namespace Day_Rater
         {
             string toChange = dayListBox.SelectedItem.ToString();
             double num = trackBar1.Value / 2.0;
-            dayListBox.Items[dayListBox.SelectedIndex] = toChange.Substring(0,toChange.IndexOf(':') +1) + " " + num + "/5 " + textBox1.Text;
+            dayListBox.Items[dayListBox.SelectedIndex] = toChange.Substring(0, toChange.IndexOf(':') + 1) + " " + num + "/5 " + textBox1.Text;
         }
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Sup", "About");
+            MessageBox.Show("Hello.", "About");
+        }
+
+        private void setDefaultFileToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var result = openFileDialog1.ShowDialog();
+            if (result == DialogResult.OK)
+            {
+                Properties.Settings.Default.DefaultFile = openFileDialog1.FileName; //Changes the default file
+                Properties.Settings.Default.SafeDefaultFile = openFileDialog1.SafeFileName; //Changes the default file
+                Properties.Settings.Default.Save();
+                MessageBox.Show("Default file has been set");
+            }
+        }
+
+        private void removeDefaultFileToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Properties.Settings.Default.DefaultFile = ""; //Changes the default file
+            Properties.Settings.Default.SafeDefaultFile = ""; //Changes the default file
+            Properties.Settings.Default.Save();
+            MessageBox.Show("Default file removed");
         }
     }
 }
