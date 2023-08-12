@@ -17,3 +17,16 @@ Removing a Day: Upon clicking an entry, the user may remove selected entry
 Unselecting: Upon clicking an entry, if the user may not want to change or remove the entry, they may press the unselect button to return to normal control
 
 Average Rating: When loading a correctly formated journal, the average rating gathered from each individual day's rating is displayed
+
+Setting Default File: The user may set a file to be automatically loaded when booting the program for ease of use. They may also reset the default file
+
+# To-do
+✅ Save users' loaded file, so it is automatically loaded when booting up.
+
+✅ Add ToolTip/ErrorProviders to clarify program functions.
+
+☐ Ask user if they are sure they want to close the program when they have unsaved changes.
+
+✅ Fix bug where loading a new file while having a default, saves on the default file instead. 
+
+✅ Make loading a file a separate method. 
