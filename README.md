@@ -33,8 +33,12 @@ Unsaved Changes: If the user has made any changes to their journal without savin
 
 ✅ Make loading a file a separate method. 
 
-☐ Fix bug where changing a day adds an extra space after the rating
+✅ Fix bug where changing a day adds an extra space after the rating
 
 ✅ Fix bug where clicking anything makes it so unsaved changes popup is shown
 
-☐ Add a save and close button to unsaved changes popup 
+✅ Add a save and close button to unsaved changes popup 
+
+☐ Add a menu strip with icons
+
+☐ Allow the user to a create file from within the program
