@@ -103,7 +103,7 @@ namespace Day_Rater
             }
         }
 
-        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
+        private void saveFile()
         {
             if (fileNameTextBox.Text == openFileDialog1.SafeFileName) //Not using a default file
                 using (StreamWriter writer = new StreamWriter(openFileDialog1.FileName))
@@ -111,11 +111,11 @@ namespace Day_Rater
                     foreach (var item in dayListBox.Items)
                     {
                         writer.WriteLine(item.ToString());
-                        logFile= newLogFile; //Make the two logfiles equal so all changes are saved
+                        logFile = newLogFile; //Make the two logfiles equal so all changes are saved
                     }
 
                 }
-            
+
             else //Using a default file
             {
                 using (StreamWriter writer = new StreamWriter(Properties.Settings.Default.DefaultFile))
@@ -125,8 +125,15 @@ namespace Day_Rater
                         writer.WriteLine(item.ToString());
                         logFile = newLogFile;
                     }
-
                 }
+            }
+        }
+
+        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (openFileDialog1.SafeFileName != "openFileDialog1" || Properties.Settings.Default.DefaultFile != "")
+            {
+                saveFile();//Coding moment
             }
         }
 
@@ -137,7 +144,6 @@ namespace Day_Rater
                 dayListBox.Items.RemoveAt(dayListBox.SelectedIndex);
                 button4.Visible = false;
             }
-
         }
 
         private bool unSavedChanges(List<string> oldLogFile, List<string> newLogFile)
@@ -148,10 +154,9 @@ namespace Day_Rater
                 newLogFile.Add(item.ToString());
             }
 
-
             if (newLogFile== null)
             {
-                return false; //No changes were made (?)
+                return false; //No changes were made 
             }
             else if (!oldLogFile.SequenceEqual(newLogFile))
             {
@@ -190,14 +195,25 @@ namespace Day_Rater
             if (unSavedChanges(logFile, newLogFile))
             {
 
-                DialogResult dialogResult = MessageBox.Show("You have unsaved changes. Are you sure you want to leave?", "Close Program", MessageBoxButtons.YesNo);
+                Form3 frm = new Form3();
+                frm.frm1 = this;
+                var result = frm.ShowDialog();
 
-                if (dialogResult == DialogResult.Yes)
+                if (result == DialogResult.Yes) //Save and Close
+                {
+                    saveFile();
+                    this.Close();
+                }
+                else if(result== DialogResult.OK) //Close no save
                 {
                     this.Close();
                 }
+                else //Cancel
+                {
+                    frm.Close();
+                }
             }
-            else
+            else //No unsaved changes
             {
                     this.Close();
             }
@@ -238,7 +254,7 @@ namespace Day_Rater
         {
             string toChange = dayListBox.SelectedItem.ToString();
             double num = trackBar1.Value / 2.0;
-            dayListBox.Items[dayListBox.SelectedIndex] = toChange.Substring(0, toChange.IndexOf(':') + 1) + " " + num + "/5 " + textBox1.Text;
+            dayListBox.Items[dayListBox.SelectedIndex] = toChange.Substring(0, toChange.IndexOf(':') + 1) + " " + num + "/5" + textBox1.Text;
         }
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
@@ -264,6 +280,31 @@ namespace Day_Rater
             Properties.Settings.Default.SafeDefaultFile = ""; //Changes the default file
             Properties.Settings.Default.Save();
             MessageBox.Show("Default file removed");
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (unSavedChanges(logFile, newLogFile))
+            {
+
+                Form3 frm = new Form3();
+                frm.frm1 = this;
+                var result = frm.ShowDialog();
+
+                if (result == DialogResult.Yes) //Save and Close
+                {
+                    saveFile();
+                    e.Cancel= false;
+                }
+                else if (result == DialogResult.OK) //Close no save
+                {
+                    e.Cancel = false;
+                }
+                else //Cancel
+                {
+                    e.Cancel = true;
+                }
+            }
         }
     }
 }
